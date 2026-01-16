@@ -1,76 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Agentic AI App Builder</title>
+    <title>Agentic Studio Pro | The Self-Healing IDE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'brand-primary': '#38bdf8', // Sky 400 - brighter for dark mode
-              'brand-secondary': '#64748b', // Slate 500
-              'brand-background': '#0f172a', // Slate 900
-              'brand-surface': '#1e293b', // Slate 800
-              'brand-surface-light': '#334155', // Slate 700
-              'brand-text-primary': '#f1f5f9', // Slate 100
-              'brand-text-secondary': '#94a3b8', // Slate 400
-              'accent-success': '#10b981',
-              'accent-warning': '#f59e0b',
-              'ide-bg': '#1e1e1e',
-              'ide-sidebar': '#252526',
-              'ide-border': '#3e3e42',
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-primary': '#0ea5e9', // Sky 500
+                        'brand-secondary': '#64748b', // Slate 500
+                        'brand-background': '#020617', // Deeper Slate 950
+                        'brand-surface': 'rgba(15, 23, 42, 0.7)', // Translucent Slate 900
+                        'brand-surface-light': 'rgba(30, 41, 59, 0.5)', // Translucent Slate 800
+                        'brand-text-primary': '#f8fafc', // Slate 50
+                        'brand-text-secondary': '#94a3b8', // Slate 400
+                        'accent-success': '#10b981',
+                        'accent-warning': '#f59e0b',
+                        'ide-bg': '#0f172a',
+                        'ide-sidebar': '#1e293b',
+                        'ide-border': 'rgba(255, 255, 255, 0.1)',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Menlo', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'shimmer': 'shimmer 2s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': {
+                                transform: 'translateY(0)'
+                            },
+                            '50%': {
+                                transform: 'translateY(-10px)'
+                            },
+                        },
+                        shimmer: {
+                            '0%': {
+                                backgroundPosition: '-200% 0'
+                            },
+                            '100%': {
+                                backgroundPosition: '200% 0'
+                            },
+                        }
+                    }
+                },
             },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              mono: ['JetBrains Mono', 'Menlo', 'monospace'],
-            },
-            animation: {
-              'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              'float': 'float 6s ease-in-out infinite',
-            },
-            keyframes: {
-              float: {
-                '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(-10px)' },
-              }
-            }
-          },
-        },
-      }
+        }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <style>
-      /* Custom Scrollbar for a cleaner look */
-      ::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1e1e1e;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #4b5563;
-        border-radius: 5px;
-        border: 2px solid #1e1e1e;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #6b7280;
-      }
-      
-      /* Selection color */
-      ::selection {
-        background: rgba(56, 189, 248, 0.3);
-        color: white;
-      }
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-light {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .accent-gradient {
+            background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+        }
+
+        /* Custom Scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 5px;
+            border: 2px solid #1e1e1e;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        /* Selection color */
+        ::selection {
+            background: rgba(56, 189, 248, 0.3);
+            color: white;
+        }
     </style>
-  <script type="importmap">
-{
+    <script type="importmap">
+        {
   "imports": {
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
@@ -80,7 +121,9 @@
 }
 </script>
 </head>
-  <body class="bg-brand-background text-brand-text-primary font-sans h-screen overflow-hidden selection:bg-brand-primary/30">
+
+<body class="bg-brand-background text-brand-text-primary font-sans h-screen overflow-hidden selection:bg-brand-primary/30">
     <div id="root" class="h-full"></div>
-  </body>
+</body>
+
 </html>

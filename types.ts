@@ -1,6 +1,7 @@
-export type AgentRole = 'planner' | 'architect' | 'designer' | 'engineer' | 'qa' | 'devops';
+export type AgentRole = 'planner' | 'architect' | 'designer' | 'engineer' | 'qa' | 'devops' | 'diagnostician';
 
-export interface Agent {
+export interface Agent
+{
   id: string;
   name: string;
   role: AgentRole;
@@ -8,13 +9,15 @@ export interface Agent {
   message: string;
 }
 
-export interface File {
+export interface File
+{
   name: string;
   language: string;
   content: string;
 }
 
-export interface LogEntry {
+export interface LogEntry
+{
   id: string;
   timestamp: string;
   agentId: string; // 'system' or agent ID
@@ -22,13 +25,15 @@ export interface LogEntry {
   type: 'info' | 'success' | 'error' | 'cmd' | 'warning' | 'chat';
 }
 
-export interface ExecutionStep {
+export interface ExecutionStep
+{
   id: number;
   label: string;
   status: 'pending' | 'running' | 'completed';
 }
 
-export interface ApiContract {
+export interface ApiContract
+{
   id: string;
   title: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -38,7 +43,8 @@ export interface ApiContract {
   response: string;
 }
 
-export interface ClarificationRequest {
+export interface ClarificationRequest
+{
   fromAgentId: string;
   toAgentId: string;
   question: string;
@@ -46,7 +52,8 @@ export interface ClarificationRequest {
 
 export type AppTheme = 'modern-clean' | 'glassmorphism' | 'neobrutalism' | 'cyberpunk' | 'minimal';
 
-export interface ProjectConfig {
+export interface ProjectConfig
+{
   name: string;
   description: string;
   theme: AppTheme;

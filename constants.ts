@@ -2,39 +2,49 @@
 import { Agent, File, ExecutionStep } from './types';
 
 export const INITIAL_AGENTS: Agent[] = [
-  { id: '1', name: 'Atlas', role: 'planner', status: 'idle', message: 'Ready to plan.' },
-  { id: '2', name: 'Nexus', role: 'architect', status: 'idle', message: 'Standing by.' },
-  { id: '3', name: 'Pixel', role: 'designer', status: 'idle', message: 'Awaiting specs.' },
-  { id: '4', name: 'Spark', role: 'engineer', status: 'idle', message: 'Ready to code.' },
-  { id: '5', name: 'Bugsy', role: 'qa', status: 'idle', message: 'Tests ready.' },
+    { id: '1', name: 'Atlas', role: 'planner', status: 'idle', message: 'Ready to plan.' },
+    { id: '2', name: 'Nexus', role: 'architect', status: 'idle', message: 'Standing by.' },
+    { id: '3', name: 'Pixel', role: 'designer', status: 'idle', message: 'Awaiting specs.' },
+    { id: '4', name: 'Spark', role: 'engineer', status: 'idle', message: 'Ready to code.' },
+    { id: '5', name: 'Bugsy', role: 'qa', status: 'idle', message: 'Tests ready.' },
+    { id: '6', name: 'Sentinel', role: 'diagnostician', status: 'idle', message: 'Monitoring...' },
 ];
 
 export const INITIAL_STEPS: ExecutionStep[] = [
-  { id: 1, label: 'Analyze Requirements', status: 'pending' },
-  { id: 2, label: 'Design Architecture', status: 'pending' },
-  { id: 3, label: 'Scaffold Project', status: 'pending' },
-  { id: 4, label: 'Generate UI Assets', status: 'pending' },
-  { id: 5, label: 'Implement Logic', status: 'pending' },
-  { id: 6, label: 'Verify & Deploy', status: 'pending' },
+    { id: 1, label: 'Analyze Requirements', status: 'pending' },
+    { id: 2, label: 'Design Architecture', status: 'pending' },
+    { id: 3, label: 'Scaffold Project', status: 'pending' },
+    { id: 4, label: 'Generate UI Assets', status: 'pending' },
+    { id: 5, label: 'Implement Logic', status: 'pending' },
+    { id: 6, label: 'Verify & Deploy', status: 'pending' },
 ];
 
 export const AGENT_PROMPTS = {
-  CODER: `You are an expert full-stack developer. 
-CRITICAL DIRECTIVE: If you encounter any ambiguity in the requirements or architecture (e.g., missing persistence strategy, undefined API endpoints), DO NOT guess. 
+    CODER: `You are an expert full-stack developer.
+CRITICAL DIRECTIVE: If you encounter any ambiguity in the requirements or architecture (e.g., missing persistence strategy, undefined API endpoints), DO NOT guess.
 Instead, output a JSON object with type "clarification_request" specifying the question and the target agent (usually the Architect).`,
-  
-  ARCHITECT: `You are a software architect. You may receive clarification requests from other agents. 
+
+    ARCHITECT: `You are a software architect. You may receive clarification requests from other agents.
 When answering:
 1. Be direct and concise.
 2. Reference the original project intent.
-3. Provide a definitive technical decision.`
+3. Provide a definitive technical decision.`,
+
+    DIAGNOSTICIAN: `You are an expert debugger and diagnostician.
+Your goal is to analyze runtime errors and provide a fix.
+You will be provided with:
+1. The current source code.
+2. The runtime error message.
+3. The project context.
+
+Output ONLY the corrected code for the specific file that needs fixing.`
 };
 
 export const DEMO_FILES: File[] = [
-  {
-    name: 'README.md',
-    language: 'markdown',
-    content: `# TaskMaster 2.0
+    {
+        name: 'README.md',
+        language: 'markdown',
+        content: `# TaskMaster 2.0
 
 ## Overview
 A high-performance, responsive task management application built with vanilla JavaScript and CSS Grid.
@@ -48,11 +58,11 @@ A high-performance, responsive task management application built with vanilla Ja
 
 ## Setup
 Simply open index.html in any modern browser. No build step required.`
-  },
-  {
-    name: 'index.html',
-    language: 'html',
-    content: `<!DOCTYPE html>
+    },
+    {
+        name: 'index.html',
+        language: 'html',
+        content: `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -73,7 +83,7 @@ Simply open index.html in any modern browser. No build step required.`
                 <span id="taskCount">0</span> tasks
             </div>
         </header>
-        
+
         <main>
             <div class="input-container">
                 <input type="text" id="taskInput" placeholder="What needs to be done?" autocomplete="off">
@@ -88,7 +98,7 @@ Simply open index.html in any modern browser. No build step required.`
             <ul id="taskList" class="task-list">
                 <!-- Tasks injected via JS -->
             </ul>
-            
+
             <div id="emptyState" class="empty-state">
                 <p>All caught up! 🎉</p>
                 <span>Add a task to get started</span>
@@ -98,11 +108,11 @@ Simply open index.html in any modern browser. No build step required.`
     <script src="app.js"></script>
 </body>
 </html>`
-  },
-  {
-    name: 'style.css',
-    language: 'css',
-    content: `:root {
+    },
+    {
+        name: 'style.css',
+        language: 'css',
+        content: `:root {
     --primary: #8b5cf6;
     --primary-hover: #7c3aed;
     --bg-dark: #0f172a;
@@ -269,11 +279,11 @@ button#addBtn:hover { background: var(--primary-hover); }
 .empty-state p { font-size: 1.1rem; margin-bottom: 0.25rem; color: var(--text-main); }
 .empty-state span { font-size: 0.85rem; }
 `
-  },
-  {
-    name: 'app.js',
-    language: 'javascript',
-    content: `const state = {
+    },
+    {
+        name: 'app.js',
+        language: 'javascript',
+        content: `const state = {
     tasks: JSON.parse(localStorage.getItem('tasks')) || []
 };
 
@@ -318,7 +328,7 @@ function deleteTask(id) {
 function render() {
     dom.list.innerHTML = '';
     dom.count.textContent = state.tasks.length;
-    
+
     if (state.tasks.length === 0) {
         dom.empty.style.display = 'flex';
     } else {
@@ -348,5 +358,5 @@ dom.input.addEventListener('keypress', (e) => {
 });
 
 render();`
-  }
+    }
 ];
