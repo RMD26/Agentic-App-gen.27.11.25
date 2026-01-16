@@ -7,6 +7,7 @@ import { AgentCard } from './components/PipelineStage';
 import { CreateWizard } from './components/wizard/CreateWizard';
 import { RefineModal } from './components/RefineModal';
 import { Button } from './components/ui/Button';
+import { AboutModal } from './components/AboutModal';
 import { INITIAL_AGENTS, INITIAL_STEPS } from './constants';
 import { aiService } from './services/aiService';
 import { zipService } from './services/zipService';
@@ -42,6 +43,7 @@ const App: React.FC = () =>
 
     // Refinement State
     const [ isRefineModalOpen, setIsRefineModalOpen ] = useState( false );
+    const [ isAboutModalOpen, setIsAboutModalOpen ] = useState( false );
     const [ isRefining, setIsRefining ] = useState( false );
 
     const logsEndRef = useRef<HTMLDivElement>( null );
@@ -516,10 +518,16 @@ const App: React.FC = () =>
                     onNavigateHome={ () => setViewMode( 'dashboard' ) }
                     onExport={ handleExport }
                     onRefine={ () => setIsRefineModalOpen( true ) }
+                    onAbout={ () => setIsAboutModalOpen( true ) }
                     canExport={ completed && files.length > 0 }
                     canRefine={ completed && files.length > 0 }
                 />
             ) }
+
+            <AboutModal
+                isOpen={ isAboutModalOpen }
+                onClose={ () => setIsAboutModalOpen( false ) }
+            />
 
             { viewMode === 'dashboard' && (
                 <div className="flex-1 flex flex-col items-center justify-center p-6 animate-in fade-in duration-700 relative overflow-hidden">
@@ -704,8 +712,8 @@ const App: React.FC = () =>
                                 </div>
                                 <div className="flex-1 relative bg-slate-50 flex flex-col items-center overflow-auto py-12 bg-[radial-gradient(#e5e7eb_1.5px,transparent_1.5px)] [background-size:24px_24px]">
                                     <div className={ `transition-all duration-700 ease-in-out bg-white shadow-[0_40px_100px_-20px_rgba(0,0,0,0.3)] shrink-0 overflow-hidden relative ${ previewMode === 'mobile' ? 'w-[375px] h-[750px] rounded-[3.5rem] border-[12px] border-slate-900 shadow-2xl scale-95' :
-                                            previewMode === 'tablet' ? 'w-[768px] h-[1024px] rounded-[2.5rem] border-[12px] border-slate-900 shadow-2xl scale-75' :
-                                                'w-full h-full border-none rounded-none'
+                                        previewMode === 'tablet' ? 'w-[768px] h-[1024px] rounded-[2.5rem] border-[12px] border-slate-900 shadow-2xl scale-75' :
+                                            'w-full h-full border-none rounded-none'
                                         }` }>
                                         <iframe
                                             ref={ iframeRef }

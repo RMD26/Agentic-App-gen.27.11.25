@@ -1,4 +1,3 @@
-
 import { Agent, File, ExecutionStep } from './types';
 
 export const INITIAL_AGENTS: Agent[] = [
@@ -7,7 +6,7 @@ export const INITIAL_AGENTS: Agent[] = [
     { id: '3', name: 'Pixel', role: 'designer', status: 'idle', message: 'Awaiting specs.' },
     { id: '4', name: 'Spark', role: 'engineer', status: 'idle', message: 'Ready to code.' },
     { id: '5', name: 'Bugsy', role: 'qa', status: 'idle', message: 'Tests ready.' },
-    { id: '6', name: 'Sentinel', role: 'diagnostician', status: 'idle', message: 'Monitoring...' },
+    { id: '6', name: 'Sentinel', role: 'diagnostician', status: 'idle', message: 'Monitoring system graph...' },
 ];
 
 export const INITIAL_STEPS: ExecutionStep[] = [
@@ -20,44 +19,48 @@ export const INITIAL_STEPS: ExecutionStep[] = [
 ];
 
 export const AGENT_PROMPTS = {
-    CODER: `You are an expert full-stack developer.
-CRITICAL DIRECTIVE: If you encounter any ambiguity in the requirements or architecture (e.g., missing persistence strategy, undefined API endpoints), DO NOT guess.
-Instead, output a JSON object with type "clarification_request" specifying the question and the target agent (usually the Architect).`,
-
-    ARCHITECT: `You are a software architect. You may receive clarification requests from other agents.
-When answering:
+    PLANNER: `You are an expert product manager and technical planner.
+Your goal is to take a user's high-level intent and break it down into a detailed execution plan.
+Focus on user experience, feature set, and technical feasibility.`,
+    ARCHITECT: `You are a software architect. You define the technical stack, file structure, and data flow.
+You may receive clarification requests from other agents. When answering:
 1. Be direct and concise.
 2. Reference the original project intent.
 3. Provide a definitive technical decision.`,
+    DESIGNER: `You are a UI/UX designer specializing in modern, premium web aesthetics.
+Your goal is to provide CSS and layout guidelines that follow glassmorphism, rich gradients, and clean typography.`,
+    ENGINEER: `You are a world-class React and TypeScript engineer.
+Your goal is to implement the plan and architecture into clean, performant, and bug-free code.
+Always use Tailwind CSS for styling as configured in the project.`,
+    QA: `You are a meticulous QA engineer.
+Your goal is to review the generated code for potential bugs, security flaws, and performance bottlenecks.`,
+    DIAGNOSTICIAN: `You are the Sentinel, the specialized autonomous agent responsible for the "Closed-Loop Self-Healing" engine of Agentic Studio Pro.
+Your operation is modeled after a state-transition graph (LangGraph conceptual framework).
 
-    DIAGNOSTICIAN: `You are an expert debugger and diagnostician.
-Your goal is to analyze runtime errors and provide a fix.
-You will be provided with:
-1. The current source code.
-2. The runtime error message.
-3. The project context.
+CORE RESPONSIBILITIES:
+1. **Node Analysis**: When an error is detected, treat the current project as a directed acyclic graph (DAG) of dependencies. Identify the "Broken Node" (the file/line/logic causing the fault).
+2. **State Transition**: You transition from the 'Observing' state to the 'Diagnosing' state. Your objective is to bridge the gap between "Manual Syntax" and "User Intent".
+3. **Graph Correction**: Generate a patch that not only fixes the immediate syntax error but also ensures the "Edge" (interaction) between modules remains consistent.
+4. **Self-Correction Loop**: If a fix fails, iterate. You have a recursive reasoning capability to verify your own logic before returning the result.
 
-Output ONLY the corrected code for the specific file that needs fixing.`
+YOUR OUTPUT FORMAT:
+Always return a JSON object with a 'files' array containing the corrected code.
+Example: { "files": [{ "name": "app.js", "content": "..." }] }
+
+TERMINOLOGY TO EMBRACE:
+- "System Graph": The overall project structure.
+- "Logic Node": A specific function or component.
+- "Interaction Edge": The communication between two nodes.
+- "Heuristic Drift": When the generated code drifts away from user intent.
+
+Focus on creating robust, modern, and production-ready patches.`
 };
 
 export const DEMO_FILES: File[] = [
     {
         name: 'README.md',
         language: 'markdown',
-        content: `# TaskMaster 2.0
-
-## Overview
-A high-performance, responsive task management application built with vanilla JavaScript and CSS Grid.
-
-## Features
-- ✨ Real-time task addition
-- 🗑️ Task deletion with animation
-- 🎨 Beautiful glassmorphism UI
-- 💾 LocalStorage persistence
-- 📱 Fully mobile responsive
-
-## Setup
-Simply open index.html in any modern browser. No build step required.`
+        content: `# TaskMaster 2.0\n\n## Overview\nA high-performance, responsive task management application built with vanilla JavaScript and CSS Grid.\n\n## Features\n- ✨ Real-time task addition\n- 🗑️ Task deletion with animation\n- 🎨 Beautiful glassmorphism UI\n- 💾 LocalStorage persistence\n- 📱 Fully mobile responsive\n\n## Setup\nSimply open index.html in any modern browser. No build step required.`
     },
     {
         name: 'index.html',
@@ -244,14 +247,6 @@ button#addBtn:hover { background: var(--primary-hover); }
     margin-right: 1rem;
     cursor: pointer;
     transition: all 0.2s;
-}
-.task-item.completed .checkbox {
-    background: var(--accent-success);
-    border-color: var(--accent-success);
-}
-.task-item.completed span {
-    text-decoration: line-through;
-    color: var(--text-muted);
 }
 
 .delete-btn {

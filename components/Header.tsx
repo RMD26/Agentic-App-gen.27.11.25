@@ -1,19 +1,26 @@
-
 import React from 'react';
-import { GeneratorIcon, ExportIcon, SparklesIcon } from './Icons';
-import { ViewMode } from '../types';
+import { GeneratorIcon, ExportIcon, SparklesIcon, InfoIcon } from './Icons';
 
 interface HeaderProps
 {
-  viewMode: ViewMode;
+  viewMode: 'dashboard' | 'wizard' | 'ide';
   onNavigateHome: () => void;
-  onExport?: () => void;
-  onRefine?: () => void;
+  onExport: () => void;
+  onRefine: () => void;
+  onAbout: () => void;
   canExport: boolean;
   canRefine: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ( { viewMode, onNavigateHome, onExport, onRefine, canExport, canRefine } ) =>
+export const Header: React.FC<HeaderProps> = ( {
+  viewMode,
+  onNavigateHome,
+  onExport,
+  onRefine,
+  onAbout,
+  canExport,
+  canRefine
+} ) =>
 {
   return (
     <header className="h-16 glass border-b border-white/5 flex items-center justify-between px-6 shrink-0 z-50 relative">
@@ -36,12 +43,22 @@ export const Header: React.FC<HeaderProps> = ( { viewMode, onNavigateHome, onExp
       </div>
 
       <div className="flex items-center space-x-4">
+        <button
+          onClick={ onAbout }
+          className="p-2 text-slate-400 hover:text-sky-400 hover:bg-sky-500/10 rounded-full transition-all"
+          title="About Studio Pro"
+        >
+          <InfoIcon />
+        </button>
+
+        <div className="h-4 w-px bg-white/10"></div>
+
         { viewMode === 'ide' && (
           <div className="flex items-center space-x-2">
             <button
               onClick={ onRefine }
               disabled={ !canRefine }
-              className="flex items-center space-x-2 px-4 py-1.5 bg-brand-primary hover:bg-sky-400 text-white rounded-full text-xs font-semibold transition-all shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/40 disabled:opacity-30 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:shadow-none"
+              className="flex items-center space-x-2 px-4 py-1.5 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary rounded-full text-xs font-semibold transition-all border border-brand-primary/20 hover:border-brand-primary/40 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <SparklesIcon />
               <span>Refine</span>
@@ -50,7 +67,7 @@ export const Header: React.FC<HeaderProps> = ( { viewMode, onNavigateHome, onExp
             <button
               onClick={ onExport }
               disabled={ !canExport }
-              className="flex items-center space-x-2 px-4 py-1.5 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary rounded-full text-xs font-semibold transition-all border border-brand-primary/20 hover:border-brand-primary/40 disabled:opacity-30 disabled:cursor-not-allowed disabled:bg-transparent"
+              className="flex items-center space-x-2 px-4 py-1.5 bg-brand-primary hover:bg-sky-400 text-white rounded-full text-xs font-semibold transition-all shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/40 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <ExportIcon />
               <span>Export</span>
