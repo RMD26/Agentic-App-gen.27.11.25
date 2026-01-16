@@ -1,5 +1,6 @@
 import React from 'react';
 import { XIcon, GeneratorIcon, CheckCircleIcon, TerminalIcon, AlertTriangleIcon } from './Icons';
+import { AILaboratory } from './AILaboratory';
 
 interface AboutModalProps
 {
@@ -57,29 +58,34 @@ export const AboutModal: React.FC<AboutModalProps> = ( { isOpen, onClose } ) =>
                             </p>
                         </section>
 
-                        <section className="bg-white/5 rounded-3xl p-8 border border-white/5 relative overflow-hidden group">
-                            <div className="absolute inset-0 accent-gradient opacity-0 group-hover:opacity-10 transition-opacity duration-700"></div>
-                            <h3 className="text-lg font-bold text-white mb-6 flex items-center space-x-3">
-                                <div className="text-sky-500"><AlertTriangleIcon /></div>
-                                <span>Closed-Loop Self-Healing</span>
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-                                <div className="space-y-2">
-                                    <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400"><TerminalIcon /></div>
-                                    <div className="font-bold text-white text-sm">Real-time Monitoring</div>
-                                    <p className="text-xs text-slate-500">Instrumented sandboxes capture runtime exceptions and console anomalies instantly.</p>
+                        <section className="bg-white/5 rounded-[2rem] p-10 border border-white/5 relative overflow-hidden group">
+                            <div className="absolute inset-0 accent-gradient opacity-0 group-hover:opacity-10 transition-opacity duration-1000"></div>
+                            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                <div className="max-w-md">
+                                    <h3 className="text-2xl font-black text-white mb-4 flex items-center space-x-3 tracking-tighter">
+                                        <div className="text-sky-500 scale-125"><AlertTriangleIcon /></div>
+                                        <span>Closed-Loop Architecture</span>
+                                    </h3>
+                                    <p className="text-slate-400 text-sm leading-relaxed font-light">
+                                        Unlike traditional "open-loop" AI tools that generate and pray, Agentic Studio Pro implements a <span className="text-white font-medium">self-healing cycle</span>.
+                                        Every logic node is monitored, diagnosed, and repaired autonomously.
+                                    </p>
                                 </div>
-                                <div className="space-y-2">
-                                    <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400"><GeneratorIcon /></div>
-                                    <div className="font-bold text-white text-sm">Autonomous Diagnosis</div>
-                                    <p className="text-xs text-slate-500">Sentinel agents analyze code graph nodes to identify root causes without user input.</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400"><CheckCircleIcon /></div>
-                                    <div className="font-bold text-white text-sm">Live Repair Patching</div>
-                                    <p className="text-xs text-slate-500">The system automatically pushes hot-fixes to the source code and refreshes the live view.</p>
+                                <div className="grid grid-cols-1 gap-4 shrink-0">
+                                    <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-2xl border border-white/5">
+                                        <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-400"><TerminalIcon /></div>
+                                        <div className="font-bold text-white text-xs">Real-time Monitoring</div>
+                                    </div>
+                                    <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-2xl border border-white/5">
+                                        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400"><GeneratorIcon /></div>
+                                        <div className="font-bold text-white text-xs">Autonomous Diagnosis</div>
+                                    </div>
                                 </div>
                             </div>
+                        </section>
+
+                        <section className="pt-8 border-t border-white/5">
+                            <AILaboratory />
                         </section>
 
                         <section>

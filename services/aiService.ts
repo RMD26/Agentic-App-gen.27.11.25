@@ -60,6 +60,54 @@ const cleanJson = ( text: string ): string =>
 };
 
 export const aiService = {
+  generateText: async ( prompt: string, systemInstruction: string ): Promise<string> =>
+  {
+    try
+    {
+      const response = await ai.models.generateContent( {
+        model: MODEL_NAME,
+        contents: prompt,
+        config: {
+          systemInstruction: systemInstruction,
+        },
+      } );
+      return response.text || "No response.";
+    } catch ( e )
+    {
+      console.error( "Text generation failed", e );
+      return "AI generation failed.";
+    }
+  },
+
+  generateSpeech: async ( text: string ): Promise<{ pcmData: string; sampleRate: number }> =>
+  {
+    const MODEL_TTS = "gemini-2.1-flash-preview-tts"; // Adjust model name if needed
+    try
+    {
+      const response = await ai.models.generateContent( {
+        model: MODEL_TTS,
+        contents: `Say professionally: ${ text }`,
+        config: {
+          responseModalities: [ "AUDIO" ],
+          speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+        },
+      } );
+
+      const part = response.candidates?.[ 0 ]?.content?.parts?.[ 0 ];
+      if ( part?.inlineData )
+      {
+        const pcmData = part.inlineData.data;
+        const sampleRate = parseInt( part.inlineData.mimeType.split( 'rate=' )[ 1 ] ) || 24000;
+        return { pcmData, sampleRate };
+      }
+      throw new Error( "No audio data received" );
+    } catch ( e )
+    {
+      console.error( "Speech generation failed", e );
+      throw e;
+    }
+  },
+
 
   generateStep: async ( stepId: number, context: GenerationContext ): Promise<GenerationResult> =>
   {
