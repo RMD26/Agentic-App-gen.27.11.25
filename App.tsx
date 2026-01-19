@@ -360,10 +360,10 @@ const App: React.FC = () =>
                                             className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs mb-3 outline-none focus:border-brand-primary"
                                         />
                                         <div className="grid grid-cols-2 gap-2 mb-3">
-                                            <select value={ imgRatio } onChange={ e => setImgRatio( e.target.value as AspectRatio ) } className="bg-slate-900 border border-slate-700 rounded p-1 text-[10px] outline-none">
+                                            <select aria-label="Aspect Ratio" value={ imgRatio } onChange={ e => setImgRatio( e.target.value as AspectRatio ) } className="bg-slate-900 border border-slate-700 rounded p-1 text-[10px] outline-none">
                                                 { [ '1:1', '2:3', '3:2', '3:4', '4:3', '9:16', '16:9', '21:9' ].map( r => <option key={ r } value={ r }>{ r }</option> ) }
                                             </select>
-                                            <select value={ imgSize } onChange={ e => setImgSize( e.target.value as ImageSize ) } className="bg-slate-900 border border-slate-700 rounded p-1 text-[10px] outline-none">
+                                            <select aria-label="Image Size" value={ imgSize } onChange={ e => setImgSize( e.target.value as ImageSize ) } className="bg-slate-900 border border-slate-700 rounded p-1 text-[10px] outline-none">
                                                 { [ '1K', '2K', '4K' ].map( s => <option key={ s } value={ s }>{ s }</option> ) }
                                             </select>
                                         </div>
