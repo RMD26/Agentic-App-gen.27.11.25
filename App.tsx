@@ -53,10 +53,12 @@ const App: React.FC = () =>
     const [ imgSize, setImgSize ] = useState<ImageSize>( "1K" );
     const [ isGeneratingImg, setIsGeneratingImg ] = useState( false );
 
+
     // UI Mode State
     const [ previewMode, setPreviewMode ] = useState<'desktop' | 'tablet' | 'mobile'>( 'desktop' );
     const [ isZenMode, setIsZenMode ] = useState( false );
     const [ activeError, setActiveError ] = useState<string | null>( null );
+    const [ isFullscreen, setIsFullscreen ] = useState( false );
 
     // Refinement State
     const [ isRefineModalOpen, setIsRefineModalOpen ] = useState( false );
@@ -65,6 +67,7 @@ const App: React.FC = () =>
     const logsEndRef = useRef<HTMLDivElement>( null );
     const chatEndRef = useRef<HTMLDivElement>( null );
     const iframeRef = useRef<HTMLIFrameElement>( null );
+    const previewContainerRef = useRef<HTMLDivElement>( null );
 
     // Check if in demo mode
     const isDemoMode = !process.env.API_KEY || process.env.API_KEY === 'your_api_key_here' || process.env.API_KEY?.trim() === '';
@@ -75,10 +78,59 @@ const App: React.FC = () =>
         logsEndRef.current?.scrollIntoView( { behavior: 'smooth' } );
     }, [ logs ] );
 
+
     useEffect( () =>
     {
         chatEndRef.current?.scrollIntoView( { behavior: 'smooth' } );
     }, [ chatMessages, isChatLoading ] );
+
+    // Fullscreen handlers
+    const toggleFullscreen = async () =>
+    {
+        if ( !previewContainerRef.current ) return;
+
+        try
+        {
+            if ( !isFullscreen )
+            {
+                await previewContainerRef.current.requestFullscreen();
+                setIsFullscreen( true );
+            } else
+            {
+                await document.exitFullscreen();
+                setIsFullscreen( false );
+            }
+        } catch ( error )
+        {
+            console.error( 'Fullscreen error:', error );
+        }
+    };
+
+    // Handle Esc key and fullscreen change events
+    useEffect( () =>
+    {
+        const handleFullscreenChange = () =>
+        {
+            setIsFullscreen( !!document.fullscreenElement );
+        };
+
+        const handleKeyDown = ( e: KeyboardEvent ) =>
+        {
+            if ( e.key === 'Escape' && isFullscreen )
+            {
+                setIsFullscreen( false );
+            }
+        };
+
+        document.addEventListener( 'fullscreenchange', handleFullscreenChange );
+        document.addEventListener( 'keydown', handleKeyDown );
+
+        return () =>
+        {
+            document.removeEventListener( 'fullscreenchange', handleFullscreenChange );
+            document.removeEventListener( 'keydown', handleKeyDown );
+        };
+    }, [ isFullscreen ] );
 
     // Global Resize Handler
     useEffect( () =>
@@ -186,10 +238,12 @@ const App: React.FC = () =>
         }
     };
 
-    // Update preview
+
+    // Update preview - Only when project is ready
     useEffect( () =>
     {
-        if ( files.length > 0 && iframeRef.current )
+        // Only update preview when project is completed to avoid unnecessary reloads
+        if ( completed && files.length > 0 && iframeRef.current )
         {
             const htmlFile = files.find( f => f.name.toLowerCase() === 'index.html' );
             const cssFile = files.find( f => f.name.toLowerCase() === 'style.css' );
@@ -202,7 +256,7 @@ const App: React.FC = () =>
                 iframeRef.current.srcdoc = content;
             }
         }
-    }, [ files ] );
+    }, [ files, completed ] );
 
     const addLog = ( message: string, agentId: string = 'system', type: LogEntry[ 'type' ] = 'info' ) =>
     {
@@ -348,16 +402,50 @@ const App: React.FC = () =>
                                 </div>
                             ) }
 
+
                             { !isZenMode && <div onMouseDown={ () => setActiveResizer( 'preview' ) } className="w-1.5 bg-ide-bg border-l border-ide-border hover:bg-brand-primary cursor-col-resize z-40 shrink-0"></div> }
 
-                            <div className="flex flex-col bg-slate-100 shrink-0 relative z-30 shadow-2xl" style={ { width: isZenMode ? '100%' : `${ previewWidth }%` } }>
+                            <div
+                                ref={ previewContainerRef }
+                                className={ `flex flex-col bg-slate-100 shrink-0 relative z-30 shadow-2xl ${ isFullscreen ? 'fixed inset-0 z-[9999]' : '' }` }
+                                style={ { width: isZenMode || isFullscreen ? '100%' : `${ previewWidth }%` } }
+                            >
                                 <div className="h-10 bg-white border-b border-slate-200 flex items-center px-4 justify-between shrink-0">
                                     <span className="text-xs font-mono text-slate-400">localhost:3000</span>
-                                    <button onClick={ () => setIsZenMode( !isZenMode ) } className="p-1.5 text-slate-400"><MaximizeIcon /></button>
+                                    <div className="flex items-center gap-2">
+                                        { isFullscreen ? (
+                                            <button
+                                                onClick={ toggleFullscreen }
+                                                className="px-3 py-1.5 text-xs font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors flex items-center gap-1.5"
+                                                title="Exit Fullscreen (Esc)"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={ 2 } d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                                Exit Fullscreen
+                                            </button>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={ toggleFullscreen }
+                                                    className="px-3 py-1.5 text-xs font-medium bg-brand-primary hover:bg-brand-primary/80 text-white rounded-md transition-colors flex items-center gap-1.5"
+                                                    title="Preview in Fullscreen"
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={ 2 } d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                                                    </svg>
+                                                    Preview
+                                                </button>
+                                                <button onClick={ () => setIsZenMode( !isZenMode ) } className="p-1.5 text-slate-400" title="Toggle Zen Mode">
+                                                    <MaximizeIcon />
+                                                </button>
+                                            </>
+                                        ) }
+                                    </div>
                                 </div>
                                 <div className="flex-1 relative bg-slate-200/50 flex flex-col items-center py-6">
                                     <div className={ `transition-all bg-white shadow-2xl shrink-0 overflow-hidden ${ previewMode === 'mobile' ? 'w-[375px] h-[667px]' : 'w-full h-full' }` }>
-                                        <iframe ref={ iframeRef } className="w-full h-full border-none bg-white" sandbox="allow-scripts allow-modals allow-same-origin" />
+                                        <iframe ref={ iframeRef } className="w-full h-full border-none bg-white" sandbox="allow-scripts allow-modals allow-same-origin" title="Preview" />
                                     </div>
                                 </div>
                             </div>
