@@ -375,7 +375,7 @@ const App: React.FC = () =>
                                             <div key={ a.id } className="aspect-square bg-slate-900 rounded border border-slate-700 overflow-hidden relative group">
                                                 <img src={ a.url } className="w-full h-full object-cover" />
                                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                                    <button onClick={ () => window.open( a.url ) } className="text-white"><ExportIcon /></button>
+                                                    <button onClick={ () => window.open( a.url ) } className="text-white" aria-label="Export Asset"><ExportIcon /></button>
                                                 </div>
                                             </div>
                                         ) ) }
@@ -520,7 +520,7 @@ const App: React.FC = () =>
                                 { chatAttachment && (
                                     <div className="relative inline-block">
                                         <img src={ chatAttachment } className="h-12 w-12 rounded border border-brand-primary object-cover" />
-                                        <button onClick={ () => setChatAttachment( null ) } className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5"><XIcon /></button>
+                                        <button onClick={ () => setChatAttachment( null ) } className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5" aria-label="Remove Attachment"><XIcon /></button>
                                     </div>
                                 ) }
                                 <div className="flex items-center space-x-2">
@@ -536,7 +536,7 @@ const App: React.FC = () =>
                                         placeholder="Ask about the code or upload a design..."
                                         className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-brand-primary"
                                     />
-                                    <button onClick={ handleChatSend } className="p-2 bg-brand-primary text-white rounded-lg"><SparklesIcon /></button>
+                                    <button onClick={ handleChatSend } className="p-2 bg-brand-primary text-white rounded-lg" aria-label="Send Message"><SparklesIcon /></button>
                                 </div>
                             </div>
                         </aside>

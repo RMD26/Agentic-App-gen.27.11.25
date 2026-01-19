@@ -1,15 +1,15 @@
 import { ProjectState, ProjectPhase, LogEntry, File } from '../types';
 import
-    {
-        CompressionConfig,
-        CompressedContext,
-        FileMetadata,
-        LogSummary,
-        PhaseSummary,
-        Issue,
-        AgentAction,
-        ErrorLog,
-    } from '../types/compression';
+{
+    CompressionConfig,
+    CompressedContext,
+    FileMetadata,
+    LogSummary,
+    PhaseSummary,
+    Issue,
+    AgentAction,
+    ErrorLog,
+} from '../types/compression';
 import { COMPRESSION_RULES, isRecent, shouldArchive } from './compressionRules';
 
 /**
@@ -81,10 +81,17 @@ export class MemoryCompressionService
                 theme: 'default',
             },
             designSystem: state.designSystem || {
-                colors: {},
-                radius: '',
-                font: '',
-                spacing: '',
+                colors: {
+                    primary: '#38bdf8',
+                    secondary: '#818cf8',
+                    background: '#0f172a',
+                    surface: '#1e293b',
+                    text: '#f8fafc',
+                    accent: '#6366f1',
+                },
+                radius: '0.5rem',
+                font: 'Inter, system-ui, sans-serif',
+                spacing: '1rem',
             },
             fileStructure: state.plan?.fileStructure || [],
             currentPhase: state.phase,
