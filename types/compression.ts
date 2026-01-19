@@ -64,7 +64,14 @@ export interface CompressedContext
             theme: string;
         };
         designSystem: {
-            colors: Record<string, string>;
+            colors: {
+                primary: string;
+                secondary: string;
+                background: string;
+                surface: string;
+                text: string;
+                accent: string;
+            };
             radius: string;
             font: string;
             spacing: string;
