@@ -1,5 +1,8 @@
 {
-  "name": "AI Agentic Application Generator 27.11.25",
-  "description": "A web application showcasing the architecture of an AI agentic system for generating full-stack applications and webpages.",
-  "requestFramePermissions": []
+  "name": "Gemini 3 Agentic Builder",
+  "description": "Advanced AI agent builder featuring Gemini 3 Pro intelligence for image generation, analysis, and deep reasoning.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
 }

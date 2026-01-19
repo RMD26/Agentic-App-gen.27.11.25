@@ -1,8 +1,7 @@
 import React from 'react';
 import { Agent } from '../types';
 
-interface AgentCardProps
-{
+interface AgentCardProps {
   agent: Agent;
 }
 
@@ -20,29 +19,27 @@ const roleColors = {
   engineer: 'text-orange-300',
   qa: 'text-red-300',
   devops: 'text-cyan-300',
-  diagnostician: 'text-sky-400 font-bold shadow-sky-500/20',
 };
 
-export const AgentCard: React.FC<AgentCardProps> = ( { agent } ) =>
-{
-  const status = statusConfig[ agent.status ];
+export const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
+  const status = statusConfig[agent.status];
 
   return (
-    <div className={ `group px-4 py-3 border-b border-ide-border hover:bg-white/5 transition-colors duration-200` }>
+    <div className={`group px-4 py-3 border-b border-ide-border hover:bg-white/5 transition-colors duration-200`}>
       <div className="flex items-start space-x-3">
         <div className="relative mt-1">
           <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-xs font-bold border border-slate-700 text-slate-300 shadow-sm">
-            { agent.name.charAt( 0 ) }
+             {agent.name.charAt(0)}
           </div>
-          <div className={ `absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-ide-sidebar ${ status.color } ${ status.glow }` }></div>
+          <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-ide-sidebar ${status.color} ${status.glow}`}></div>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-center mb-0.5">
-            <h4 className="text-sm font-medium text-brand-text-primary truncate group-hover:text-white transition-colors">{ agent.name }</h4>
-            <span className={ `text-[10px] font-mono uppercase tracking-wider opacity-80 ${ roleColors[ agent.role ] }` }>{ agent.role }</span>
+            <h4 className="text-sm font-medium text-brand-text-primary truncate group-hover:text-white transition-colors">{agent.name}</h4>
+            <span className={`text-[10px] font-mono uppercase tracking-wider opacity-80 ${roleColors[agent.role]}`}>{agent.role}</span>
           </div>
-          <p className={ `text-xs truncate transition-all duration-300 ${ agent.status === 'working' ? 'text-brand-primary' : 'text-slate-500' }` }>
-            { agent.message }
+          <p className={`text-xs truncate transition-all duration-300 ${agent.status === 'working' ? 'text-brand-primary' : 'text-slate-500'}`}>
+             {agent.message}
           </p>
         </div>
       </div>
