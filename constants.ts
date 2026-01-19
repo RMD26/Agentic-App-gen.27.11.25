@@ -2,39 +2,151 @@
 import { Agent, File, ExecutionStep } from './types';
 
 export const INITIAL_AGENTS: Agent[] = [
-  { id: '1', name: 'Atlas', role: 'planner', status: 'idle', message: 'Ready to plan.' },
-  { id: '2', name: 'Nexus', role: 'architect', status: 'idle', message: 'Standing by.' },
-  { id: '3', name: 'Pixel', role: 'designer', status: 'idle', message: 'Awaiting specs.' },
-  { id: '4', name: 'Spark', role: 'engineer', status: 'idle', message: 'Ready to code.' },
-  { id: '5', name: 'Bugsy', role: 'qa', status: 'idle', message: 'Tests ready.' },
+    { id: '1', name: 'Atlas', role: 'planner', status: 'idle', message: 'Product Manager - Ready to define features', phase: 'planning' },
+    { id: '2', name: 'Aesthete', role: 'designer', status: 'idle', message: 'Visual Designer - Ready to create theme.json', phase: 'designing' },
+    { id: '3', name: 'Nexus', role: 'architect', status: 'idle', message: 'Software Architect - Ready to scaffold structure', phase: 'architecting' },
+    { id: '4', name: 'Spark', role: 'coder', status: 'idle', message: 'Full-Stack Engineer - Ready to implement', phase: 'coding' },
+    { id: '5', name: 'Patcher', role: 'healer', status: 'idle', message: 'Self-Healing Agent - Ready for surgical repairs', phase: 'healing' },
 ];
 
 export const INITIAL_STEPS: ExecutionStep[] = [
-  { id: 1, label: 'Analyze Requirements', status: 'pending' },
-  { id: 2, label: 'Design Architecture', status: 'pending' },
-  { id: 3, label: 'Scaffold Project', status: 'pending' },
-  { id: 4, label: 'Generate UI Assets', status: 'pending' },
-  { id: 5, label: 'Implement Logic', status: 'pending' },
-  { id: 6, label: 'Verify & Deploy', status: 'pending' },
+    { id: 1, label: 'Plan Features & Data', status: 'pending', phase: 'planning' },
+    { id: 2, label: 'Design Theme System', status: 'pending', phase: 'designing' },
+    { id: 3, label: 'Scaffold Architecture', status: 'pending', phase: 'architecting' },
+    { id: 4, label: 'Generate Core Files', status: 'pending', phase: 'coding' },
+    { id: 5, label: 'Implement Features', status: 'pending', phase: 'coding' },
+    { id: 6, label: 'Verify & Finalize', status: 'pending', phase: 'ready' },
 ];
 
+
+// Enhanced Agent System Prompts for State Machine Architecture
+export const AGENT_SYSTEM_PROMPTS = {
+    PLANNER: `You are Atlas, the Product Manager and Planning Agent.
+Your goal: Convert user intent into concrete engineering specifications.
+
+CRITICAL RULES:
+1. Define a clear, prioritized feature list
+2. Design a data schema for src/lib/mockData.ts with 50+ realistic entries
+3. Specify complete file structure
+4. DO NOT write code yet - only planning
+
+THE MOCK DATA MANDATE:
+You MUST plan for realistic mock data. Examples:
+✓ GOOD: "Alice Johnson, VP of Sales, alice.j@company.com"
+✗ BAD: "User 1, user1@example.com"
+
+Output JSON format:
+{
+  "features": ["User authentication", "Task management", "Real-time updates"],
+  "fileStructure": ["src/app/page.tsx", "src/lib/mockData.ts", "src/components/TaskList.tsx"],
+  "mockDataSchema": {
+    "users": "Array of 50+ users with realistic names, titles, emails, avatars",
+    "tasks": "Array of 100+ tasks with varied statuses, priorities, assignees"
+  }
+}`,
+
+    DESIGNER: `You are Aesthete, the Visual Designer Agent.
+Your goal: Create a theme.json design system with strict Tailwind CSS tokens.
+
+Input: User's aesthetic preference (e.g., "Cyberpunk", "Minimal", "Glassmorphism")
+
+TRANSLATION GUIDE:
+- "Cyberpunk" → primary: "cyan-400", accent: "pink-500", bg: "slate-900", radius: "rounded-none", font: "font-mono"
+- "Minimal" → primary: "gray-900", accent: "gray-600", bg: "white", radius: "rounded-sm", font: "font-sans"
+- "Glassmorphism" → primary: "purple-500", accent: "blue-400", bg: "slate-900", radius: "rounded-2xl", font: "font-sans"
+
+Output JSON format:
+{
+  "colors": {
+    "primary": "cyan-400",
+    "secondary": "purple-500",
+    "background": "slate-900",
+    "surface": "slate-800",
+    "text": "cyan-50",
+    "accent": "pink-500"
+  },
+  "radius": "rounded-none",
+  "font": "font-mono",
+  "spacing": "tight"
+}`,
+
+    ARCHITECT: `You are Nexus, the Software Architect Agent.
+Your goal: Scaffold the Virtual File System (VFS) with correct structure.
+
+CRITICAL RULES:
+1. Ensure src/app/page.tsx is the Next.js 14 App Router entry point
+2. Use correct import paths: @/components/..., @/lib/...
+3. Create directory structure matching the plan
+4. Generate stub/skeleton files (NO full implementation yet)
+5. MUST include src/lib/mockData.ts in the structure
+
+Output: File tree with paths and minimal stub content
+Example:
+{
+  "src/app/page.tsx": "export default function Page() { return <div>Home</div>; }",
+  "src/lib/mockData.ts": "export const users = [];",
+  "src/components/Header.tsx": "export function Header() { return <header></header>; }"
+}`,
+
+    CODER: `You are Spark, the Full-Stack Engineer Agent.
+Your goal: Implement the complete application with production-quality code.
+
+CRITICAL RULES:
+1. Use Next.js 14 App Router exclusively
+2. Inject theme.json values into Tailwind classes (e.g., bg-{theme.colors.background})
+3. NO placeholders like "// rest of code" or "// TODO"
+4. MUST create src/lib/mockData.ts with 50+ realistic entries
+5. Use Lucide React for all icons
+6. Use TypeScript with proper types
+7. Make it BEAUTIFUL - modern, responsive, polished UI
+
+THE MOCK DATA MANDATE:
+src/lib/mockData.ts MUST contain:
+- Realistic names: "Sarah Chen", "Marcus Rodriguez", "Aisha Patel"
+- Realistic emails: "sarah.chen@company.com"
+- Varied data: different roles, statuses, timestamps
+- Minimum 50 entries for main entities
+
+Stack: Next.js 14, Tailwind CSS, TypeScript, Lucide React
+
+Output: Complete, functional files ready to run.`,
+
+    HEALER: `You are Patcher, the Self-Healing Agent.
+Your goal: Perform surgical repairs on compilation/runtime errors.
+
+PROCESS:
+1. READ the stderr logs carefully
+2. IDENTIFY the exact file and line number causing the error
+3. ANALYZE the root cause (type error, import issue, syntax error, etc.)
+4. MUTATE only the specific lines needed to fix the error
+5. DO NOT rewrite entire files unless absolutely necessary
+6. INCREMENT healing attempt counter
+
+COMMON FIXES:
+- Type errors: Add proper TypeScript types
+- Import errors: Fix import paths or add missing imports
+- Syntax errors: Correct the specific syntax issue
+- Missing dependencies: Note what needs to be installed
+
+Output JSON format:
+{
+  "file": "src/app/page.tsx",
+  "fix": "Fixed version of the file OR minimal diff",
+  "explanation": "Brief description of what was fixed"
+}`
+};
+
+// Legacy prompts for backward compatibility
 export const AGENT_PROMPTS = {
-  CODER: `You are an expert full-stack developer. 
-CRITICAL DIRECTIVE: If you encounter any ambiguity in the requirements or architecture (e.g., missing persistence strategy, undefined API endpoints), DO NOT guess. 
-Instead, output a JSON object with type "clarification_request" specifying the question and the target agent (usually the Architect).`,
-  
-  ARCHITECT: `You are a software architect. You may receive clarification requests from other agents. 
-When answering:
-1. Be direct and concise.
-2. Reference the original project intent.
-3. Provide a definitive technical decision.`
+    CODER: AGENT_SYSTEM_PROMPTS.CODER,
+    ARCHITECT: AGENT_SYSTEM_PROMPTS.ARCHITECT
 };
 
 export const DEMO_FILES: File[] = [
-  {
-    name: 'README.md',
-    language: 'markdown',
-    content: `# TaskMaster 2.0
+    {
+        name: 'README.md',
+        language: 'markdown',
+        content: `# TaskMaster 2.0
 
 ## Overview
 A high-performance, responsive task management application built with vanilla JavaScript and CSS Grid.
@@ -48,11 +160,11 @@ A high-performance, responsive task management application built with vanilla Ja
 
 ## Setup
 Simply open index.html in any modern browser. No build step required.`
-  },
-  {
-    name: 'index.html',
-    language: 'html',
-    content: `<!DOCTYPE html>
+    },
+    {
+        name: 'index.html',
+        language: 'html',
+        content: `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -73,7 +185,7 @@ Simply open index.html in any modern browser. No build step required.`
                 <span id="taskCount">0</span> tasks
             </div>
         </header>
-        
+
         <main>
             <div class="input-container">
                 <input type="text" id="taskInput" placeholder="What needs to be done?" autocomplete="off">
@@ -88,7 +200,7 @@ Simply open index.html in any modern browser. No build step required.`
             <ul id="taskList" class="task-list">
                 <!-- Tasks injected via JS -->
             </ul>
-            
+
             <div id="emptyState" class="empty-state">
                 <p>All caught up! 🎉</p>
                 <span>Add a task to get started</span>
@@ -98,11 +210,11 @@ Simply open index.html in any modern browser. No build step required.`
     <script src="app.js"></script>
 </body>
 </html>`
-  },
-  {
-    name: 'style.css',
-    language: 'css',
-    content: `:root {
+    },
+    {
+        name: 'style.css',
+        language: 'css',
+        content: `:root {
     --primary: #8b5cf6;
     --primary-hover: #7c3aed;
     --bg-dark: #0f172a;
@@ -269,11 +381,11 @@ button#addBtn:hover { background: var(--primary-hover); }
 .empty-state p { font-size: 1.1rem; margin-bottom: 0.25rem; color: var(--text-main); }
 .empty-state span { font-size: 0.85rem; }
 `
-  },
-  {
-    name: 'app.js',
-    language: 'javascript',
-    content: `const state = {
+    },
+    {
+        name: 'app.js',
+        language: 'javascript',
+        content: `const state = {
     tasks: JSON.parse(localStorage.getItem('tasks')) || []
 };
 
@@ -318,7 +430,7 @@ function deleteTask(id) {
 function render() {
     dom.list.innerHTML = '';
     dom.count.textContent = state.tasks.length;
-    
+
     if (state.tasks.length === 0) {
         dom.empty.style.display = 'flex';
     } else {
@@ -348,5 +460,5 @@ dom.input.addEventListener('keypress', (e) => {
 });
 
 render();`
-  }
+    }
 ];
