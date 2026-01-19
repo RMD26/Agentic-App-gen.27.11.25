@@ -344,7 +344,7 @@ const App: React.FC = () =>
             { viewMode === 'ide' && (
                 <div className="flex-1 flex overflow-hidden">
                     { !isZenMode && (
-                        <aside className="bg-ide-sidebar border-r border-ide-border flex flex-col shrink-0 relative" style={ { width: `${ sidebarWidth }px` } }>
+                        <aside className="bg-ide-sidebar border-r border-ide-border flex flex-col shrink-0 relative w-[var(--sidebar-width)]" style={ { '--sidebar-width': `${ sidebarWidth }px` } as React.CSSProperties }>
                             <Panel title="Agent Swarm" className="h-64 border-b border-ide-border">
                                 { agents.map( agent => <AgentCard key={ agent.id } agent={ agent } /> ) }
                             </Panel>
@@ -373,7 +373,7 @@ const App: React.FC = () =>
                                     <div className="grid grid-cols-2 gap-2">
                                         { assets.map( a => (
                                             <div key={ a.id } className="aspect-square bg-slate-900 rounded border border-slate-700 overflow-hidden relative group">
-                                                <img src={ a.url } className="w-full h-full object-cover" />
+                                                <img src={ a.url } className="w-full h-full object-cover" alt={ a.prompt } />
                                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                                     <button onClick={ () => window.open( a.url ) } className="text-white" aria-label="Export Asset"><ExportIcon /></button>
                                                 </div>
@@ -407,8 +407,8 @@ const App: React.FC = () =>
 
                             <div
                                 ref={ previewContainerRef }
-                                className={ `flex flex-col bg-slate-100 shrink-0 relative z-30 shadow-2xl ${ isFullscreen ? 'fixed inset-0 z-[9999]' : '' }` }
-                                style={ { width: isZenMode || isFullscreen ? '100%' : `${ previewWidth }%` } }
+                                className={ `flex flex-col bg-slate-100 shrink-0 relative z-30 shadow-2xl w-[var(--preview-width)] ${ isFullscreen ? 'fixed inset-0 z-[9999]' : '' }` }
+                                style={ { '--preview-width': isZenMode || isFullscreen ? '100%' : `${ previewWidth }%` } as React.CSSProperties }
                             >
                                 <div className="h-10 bg-white border-b border-slate-200 flex items-center px-4 justify-between shrink-0">
                                     <span className="text-xs font-mono text-slate-400">localhost:3000</span>
@@ -452,7 +452,7 @@ const App: React.FC = () =>
                         </div>
 
                         { !isZenMode && (
-                            <div className="bg-ide-bg border-t border-ide-border flex flex-col shrink-0 z-20 relative" style={ { height: `${ terminalHeight }px` } }>
+                            <div className="bg-ide-bg border-t border-ide-border flex flex-col shrink-0 z-20 relative h-[var(--terminal-height)]" style={ { '--terminal-height': `${ terminalHeight }px` } as React.CSSProperties }>
                                 <div onMouseDown={ () => setActiveResizer( 'terminal' ) } className="absolute -top-1 left-0 right-0 h-2 cursor-row-resize z-50 hover:bg-brand-primary/30"></div>
                                 <div className="h-8 flex items-center px-4 bg-[#1e1e1e] border-b border-ide-border">
                                     <TerminalIcon /> <span className="ml-2 text-xs font-mono text-slate-400">Output</span>
@@ -491,7 +491,7 @@ const App: React.FC = () =>
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                                 { chatMessages.map( m => (
                                     <div key={ m.id } className={ `flex flex-col ${ m.role === 'user' ? 'items-end' : 'items-start' }` }>
-                                        { m.attachment && <img src={ m.attachment } className="max-w-[150px] rounded-lg mb-1 border border-slate-700" /> }
+                                        { m.attachment && <img src={ m.attachment } className="max-w-[150px] rounded-lg mb-1 border border-slate-700" alt="Attachment" /> }
                                         <div className={ `p-3 rounded-2xl text-xs max-w-[90%] ${ m.role === 'user' ? 'bg-brand-primary text-white' : 'bg-slate-800 text-slate-200' }` }>
                                             { m.isThinking && <div className="text-[9px] text-brand-primary font-bold mb-1 uppercase tracking-tighter">Analyzed Deeply</div> }
                                             { m.text }
@@ -519,14 +519,14 @@ const App: React.FC = () =>
                             <div className="p-4 border-t border-slate-700 space-y-2">
                                 { chatAttachment && (
                                     <div className="relative inline-block">
-                                        <img src={ chatAttachment } className="h-12 w-12 rounded border border-brand-primary object-cover" />
+                                        <img src={ chatAttachment } className="h-12 w-12 rounded border border-brand-primary object-cover" alt="Attachment preview" />
                                         <button onClick={ () => setChatAttachment( null ) } className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5" aria-label="Remove Attachment"><XIcon /></button>
                                     </div>
                                 ) }
                                 <div className="flex items-center space-x-2">
                                     <label className="cursor-pointer text-slate-400 hover:text-brand-primary p-2 bg-slate-800 rounded-lg transition-colors border border-transparent hover:border-slate-600">
                                         <ImageIcon />
-                                        <input type="file" className="hidden" accept="image/*" onChange={ handleImageUpload } />
+                                        <input type="file" className="hidden" accept="image/*" onChange={ handleImageUpload } aria-label="Upload image for analysis" />
                                     </label>
                                     <input
                                         type="text"

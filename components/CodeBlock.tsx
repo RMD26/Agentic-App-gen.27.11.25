@@ -178,9 +178,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ( { code, language, title, 
                     placeholder={ readOnly ? "No content" : "// Type your code here... (Ctrl+Space for AI suggestions)" }
                     className={ `w-full h-full bg-[#1e1e1e] text-[#d4d4d4] font-mono text-[13px] leading-6 p-6 outline-none resize-none selection:bg-brand-primary/20 ${ readOnly ? 'cursor-default' : 'cursor-text'
                         }` }
-                    style={ {
-                        fontFamily: '"JetBrains Mono", "Menlo", "Consolas", monospace',
-                    } }
                 />
 
                 {/* Inline suggestion (ghost text) */ }
@@ -195,11 +192,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ( { code, language, title, 
                 { showSuggestions && suggestions.length > 0 && (
                     <div
                         ref={ suggestionsRef }
-                        className="absolute bg-[#252526] border border-[#3e3e42] rounded-md shadow-2xl z-50 max-w-md"
-                        style={ {
-                            top: '100px',
-                            left: '100px',
-                        } }
+                        className="absolute bg-[#252526] border border-[#3e3e42] rounded-md shadow-2xl z-50 max-w-md top-[100px] left-[100px]"
                     >
                         { suggestions.map( ( suggestion, index ) => (
                             <div
@@ -237,7 +230,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ( { code, language, title, 
                     </div>
                 ) }
             </div>
-        </div>
+        </div >
     );
 };
 
