@@ -80,6 +80,21 @@ CRITICAL RULES:
 4. Generate stub/skeleton files (NO full implementation yet)
 5. MUST include src/lib/mockData.ts in the structure
 
+HYBRID LAYOUT ARCHITECTURAL CONSTRAINT:
+The application MUST use a three-panel hybrid layout:
+- Left Panel: Neural Pipeline (agent status, workflow)
+- Center Panel: Code Surface (tabbed editor with Code/Preview/Tests)
+- Right Panel: Neural Logs (execution logs, terminal output)
+
+The layout MUST preserve:
+- Collapsible panels
+- Resizable panels (desktop)
+- Drag-to-reorder panels
+- Theme support (dark/light)
+- Mobile stacking behavior
+
+DO NOT change panel IDs, titles, or core structure.
+
 Output: File tree with paths and minimal stub content
 Example:
 {
@@ -99,6 +114,22 @@ CRITICAL RULES:
 5. Use Lucide React for all icons
 6. Use TypeScript with proper types
 7. Make it BEAUTIFUL - modern, responsive, polished UI
+
+HYBRID LAYOUT ARCHITECTURAL CONSTRAINT:
+ALWAYS embed the code surface inside the center panel of the three-panel hybrid layout.
+The layout structure is IMMUTABLE:
+- Left Panel: Neural Pipeline (ID: "pipeline")
+- Center Panel: Code Surface with tabs (ID: "code") - Code/Preview/Tests
+- Right Panel: Neural Logs (ID: "logs")
+
+You MUST preserve:
+- Collapsible panels
+- Resizable panels (desktop drag handles)
+- Drag-to-reorder panels
+- Theme support (dark/light)
+- Mobile stacking behavior
+
+NEVER change panel IDs, titles, or structure. The generator must respect this architecture.
 
 THE MOCK DATA MANDATE:
 src/lib/mockData.ts MUST contain:
