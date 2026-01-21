@@ -288,9 +288,38 @@ export class MemoryCompressionService
     private summarizeCompletedPhases ( state: ProjectState ): PhaseSummary[]
     {
         const summaries: PhaseSummary[] = [];
+        const phases: ProjectPhase[] = [ 'planning', 'designing', 'architecting', 'coding' ];
+        const currentPhaseIdx = phases.indexOf( state.phase );
 
-        // This would be populated from actual phase history
-        // For now, return empty array
+        for ( let i = 0; i < currentPhaseIdx; i++ )
+        {
+            const phase = phases[ i ];
+            let details = '';
+
+            if ( phase === 'planning' )
+            {
+                details = `Defined ${ state.plan.features.length } features: ${ state.plan.features.slice( 0, 3 ).join( ', ' ) }...`;
+            }
+            else if ( phase === 'designing' )
+            {
+                details = `Created design system with ${ state.designSystem.font } font and ${ state.designSystem.colors.primary } primary color.`;
+            }
+            else if ( phase === 'architecting' )
+            {
+                details = `Scaffolded ${ state.plan.fileStructure.length } files according to plan.`;
+            }
+
+            summaries.push( {
+                phase,
+                agent: 'system',
+                summary: `Completed ${ phase } phase. ${ details }`,
+                outcome: 'Success',
+                duration: '0s',
+                status: 'complete',
+                timestamp: new Date().toISOString()
+            } );
+        }
+
         return summaries;
     }
 
@@ -301,7 +330,6 @@ export class MemoryCompressionService
     {
         const issues: Issue[] = [];
 
-        // Check for errors in terminal logs
         if ( state.terminalLogs?.stderr )
         {
             issues.push( {
@@ -322,8 +350,6 @@ export class MemoryCompressionService
      */
     private getRecentActions ( state: ProjectState ): AgentAction[]
     {
-        // This would be populated from actual action history
-        // For now, return empty array
         return [];
     }
 
@@ -348,16 +374,34 @@ export class MemoryCompressionService
 
     /**
      * Get current working files
+     * Prioritizes critical files and entry points
      */
     private getCurrentFiles ( state: ProjectState ): File[]
     {
-        const files = Object.entries( state.fileSystem || {} ).map( ( [ name, content ] ) => ( {
+        const allFiles = Object.entries( state.fileSystem || {} ).map( ( [ name, content ] ) => ( {
             name,
             language: this.detectLanguage( name ),
             content,
         } ) );
 
-        return files.slice( 0, COMPRESSION_RULES.recentLimits.files );
+        // Priority list for critical files
+        const priorityPatterns = [
+            /App\.(tsx|jsx|js)$/,
+            /index\.(tsx|jsx|js)$/,
+            /main\.(tsx|jsx|js)$/,
+            /package\.json$/,
+            /types\.(ts|js)$/
+        ];
+
+        const prioritize = ( f: File ) =>
+        {
+            const priorityIndex = priorityPatterns.findIndex( pattern => pattern.test( f.name ) );
+            return priorityIndex === -1 ? 100 : priorityIndex;
+        };
+
+        return allFiles
+            .sort( ( a, b ) => prioritize( a ) - prioritize( b ) )
+            .slice( 0, COMPRESSION_RULES.recentLimits.files );
     }
 
     /**

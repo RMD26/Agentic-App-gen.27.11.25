@@ -1,0 +1,18 @@
+:root {
+  --sidebar-width: 320px;
+  --preview-width: 45%;
+  --terminal-height: 192px;
+}
+
+/* These variables will be updated dynamically via JS on the #root or a specific container */
+aside {
+  width: var(--sidebar-width);
+}
+
+.preview-container {
+  width: var(--preview-width);
+}
+
+.terminal-container {
+  height: var(--terminal-height);
+}

@@ -8,20 +8,49 @@ const MODEL_FLASH = "gemini-3-flash-preview";
 const MODEL_PRO = "gemini-3-pro-preview";
 const MODEL_IMAGE = "gemini-3-pro-image-preview";
 
-// Check if we're in demo mode (no API key or placeholder key)
+// Centralized API Key and AI instance logic
+const getApiKey = () => process.env.API_KEY || process.env.GEMINI_API_KEY || "";
 const isDemoMode = (): boolean =>
 {
-  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+  const apiKey = getApiKey();
   return !apiKey || apiKey === 'your_api_key_here' || apiKey.trim() === '';
+};
+
+let aiInstance: GoogleGenAI | null = null;
+const getAi = () =>
+{
+  if ( !aiInstance )
+  {
+    aiInstance = new GoogleGenAI( { apiKey: getApiKey() } );
+  }
+  return aiInstance;
 };
 
 const cleanJson = ( text: string ): string =>
 {
   if ( !text ) return "{}";
+  // Remove markdown blocks
   let clean = text.replace( /```json\s*/g, '' ).replace( /```\s*/g, '' );
+
+  // Find the balanced JSON object
   const firstBrace = clean.indexOf( '{' );
-  const lastBrace = clean.lastIndexOf( '}' );
-  if ( firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace )
+  if ( firstBrace === -1 ) return "{}";
+
+  let braceCount = 0;
+  let lastBrace = -1;
+  for ( let i = firstBrace; i < clean.length; i++ )
+  {
+    if ( clean[ i ] === '{' ) braceCount++;
+    else if ( clean[ i ] === '}' ) braceCount--;
+
+    if ( braceCount === 0 )
+    {
+      lastBrace = i;
+      break;
+    }
+  }
+
+  if ( lastBrace !== -1 )
   {
     clean = clean.substring( firstBrace, lastBrace + 1 );
   }
@@ -34,133 +63,151 @@ export const aiService = {
   // Chatbot with Thinking and Image Analysis capabilities
   chat: async ( message: string, history: any[], attachment?: string, useThinking?: boolean ) =>
   {
-    // Use demo mode if no API key
     if ( isDemoMode() )
     {
       return demoService.chat( message );
     }
 
-    const ai = new GoogleGenAI( { apiKey: process.env.API_KEY } );
-
-    const parts: any[] = [ { text: message } ];
-
-    // Add image understanding if attachment provided
-    if ( attachment )
+    try
     {
-      // Extract mime type and base64 data correctly
-      const matches = attachment.match( /^data:(.+);base64,(.+)$/ );
-      if ( matches && matches.length === 3 )
+      const ai = getAi();
+      const parts: any[] = [ { text: message } ];
+
+      if ( attachment )
       {
-        parts.push( {
-          inlineData: {
-            mimeType: matches[ 1 ],
-            data: matches[ 2 ]
-          }
-        } );
+        const matches = attachment.match( /^data:(.+);base64,(.+)$/ );
+        if ( matches && matches.length === 3 )
+        {
+          parts.push( {
+            inlineData: {
+              mimeType: matches[ 1 ],
+              data: matches[ 2 ]
+            }
+          } );
+        }
       }
-    }
 
-    const config: any = {};
-    if ( useThinking )
+      const config: any = {};
+      if ( useThinking )
+      {
+        config.thinkingConfig = { thinkingBudget: 32768 };
+      }
+
+      const response = await ai.models.generateContent( {
+        model: MODEL_PRO,
+        contents: [ ...history, { role: 'user', parts } ],
+        config
+      } );
+
+      return response.text;
+    } catch ( error )
     {
-      // Set maximum thinking budget for Pro as per instructions
-      config.thinkingConfig = { thinkingBudget: 32768 };
+      console.error( "AI Service Chat Error:", error );
+      throw new Error( "Failed to communicate with AI. Please check your API key." );
     }
-
-    const response = await ai.models.generateContent( {
-      model: MODEL_PRO,
-      contents: [ ...history, { role: 'user', parts } ],
-      config
-    } );
-
-    return response.text;
   },
 
   // Advanced Image Generation
   generateImage: async ( prompt: string, aspectRatio: AspectRatio = "1:1", imageSize: ImageSize = "1K" ): Promise<string> =>
   {
-    // Use demo mode if no API key
     if ( isDemoMode() )
     {
       return demoService.generateImage( prompt );
     }
 
-    const ai = new GoogleGenAI( { apiKey: process.env.API_KEY } );
-    const response = await ai.models.generateContent( {
-      model: MODEL_IMAGE,
-      contents: [ { text: prompt } ],
-      config: {
-        imageConfig: {
-          aspectRatio,
-          imageSize
+    try
+    {
+      const ai = getAi();
+      const response = await ai.models.generateContent( {
+        model: MODEL_IMAGE,
+        contents: [ { text: prompt } ],
+        config: {
+          imageConfig: {
+            aspectRatio,
+            imageSize
+          }
         }
-      }
-    } );
+      } );
 
-    // Find image part in candidates
-    const part = response.candidates[ 0 ].content.parts.find( p => p.inlineData );
-    return part ? `data:image/png;base64,${ part.inlineData.data }` : "";
+      const part = response.candidates[ 0 ].content.parts.find( p => p.inlineData );
+      return part ? `data:image/png;base64,${ part.inlineData.data }` : "";
+    } catch ( error )
+    {
+      console.error( "AI Service Image Generation Error:", error );
+      throw error;
+    }
   },
 
   generateStep: async ( stepId: number, context: any ): Promise<any> =>
   {
-    // Use demo mode if no API key
     if ( isDemoMode() )
     {
       return demoService.generateStep( stepId, context );
     }
 
-    const ai = new GoogleGenAI( { apiKey: process.env.API_KEY } );
-    const { config, currentFiles, clarificationAnswer } = context;
+    try
+    {
+      const ai = getAi();
+      const { config, currentFiles } = context;
 
-    const fileContext = currentFiles
-      ? `Current Project Files:\n${ currentFiles.map( ( f: any ) => `--- ${ f.name } ---\n${ f.content }` ).join( '\n\n' ) }`
-      : "";
+      const fileContext = currentFiles
+        ? `Current Project Files:\n${ currentFiles.map( ( f: any ) => `--- ${ f.name } ---\n${ f.content }` ).join( '\n\n' ) }`
+        : "";
 
-    // Use Flash for standard fast generation steps
-    const response = await ai.models.generateContent( {
-      model: MODEL_FLASH,
-      contents: `Project: ${ config.name }. Step: ${ stepId }. ${ fileContext }`,
-      config: {
-        systemInstruction: "Expert AI agent assistant. Output project files in JSON.",
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            files: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  language: { type: Type.STRING },
-                  content: { type: Type.STRING },
-                },
-                required: [ "name", "language", "content" ]
+      const response = await ai.models.generateContent( {
+        model: MODEL_FLASH,
+        contents: `Project: ${ config.name }. Step: ${ stepId }. ${ fileContext }`,
+        config: {
+          systemInstruction: "Expert AI agent assistant. Output project files in JSON.",
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              files: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    name: { type: Type.STRING },
+                    language: { type: Type.STRING },
+                    content: { type: Type.STRING },
+                  },
+                  required: [ "name", "language", "content" ]
+                }
               }
             }
           }
         }
-      }
-    } );
+      } );
 
-    return JSON.parse( cleanJson( response.text || "{}" ) );
+      return JSON.parse( cleanJson( response.text || "{}" ) );
+    } catch ( error )
+    {
+      console.error( `AI Service generateStep ${ stepId } Error:`, error );
+      throw error;
+    }
   },
 
   getClarificationAnswer: async ( request: ClarificationRequest, config: ProjectConfig ): Promise<string> =>
   {
-    // Use demo mode if no API key
     if ( isDemoMode() )
     {
       return demoService.getClarificationAnswer( request, config );
     }
 
-    const ai = new GoogleGenAI( { apiKey: process.env.API_KEY } );
-    const response = await ai.models.generateContent( {
-      model: MODEL_FLASH,
-      contents: `Architect Nexus: Resolve this ambiguity for ${ config.name }: "${ request.question }"`,
-    } );
-    return response.text || "Proceed with standard best practices.";
+    try
+    {
+      const ai = getAi();
+      const response = await ai.models.generateContent( {
+        model: MODEL_FLASH,
+        contents: `Architect Nexus: Resolve this ambiguity for ${ config.name }: "${ request.question }"`,
+      } );
+      return response.text || "Proceed with standard best practices.";
+    } catch ( error )
+    {
+      console.error( "AI Service getClarificationAnswer Error:", error );
+      return "Proceed with standard best practices.";
+    }
   },
 
   refineCode: async ( currentFiles: File[], instruction: string, config: ProjectConfig ): Promise<File[]> =>

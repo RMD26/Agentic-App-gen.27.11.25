@@ -1,5 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import './App.css';
+
 import { Header } from './components/Header';
 import { Panel } from './components/Section';
 import { CodeEditor } from './components/CodeBlock';
@@ -68,6 +70,7 @@ const App: React.FC = () =>
     const chatEndRef = useRef<HTMLDivElement>( null );
     const iframeRef = useRef<HTMLIFrameElement>( null );
     const previewContainerRef = useRef<HTMLDivElement>( null );
+    const layoutRef = useRef<HTMLDivElement>( null );
 
     // Check if in demo mode
     const isDemoMode = !process.env.API_KEY || process.env.API_KEY === 'your_api_key_here' || process.env.API_KEY?.trim() === '';
@@ -161,6 +164,18 @@ const App: React.FC = () =>
             window.removeEventListener( 'mouseup', handleMouseUp );
         };
     }, [ activeResizer ] );
+
+    // Synchronize React state with CSS variables to avoid inline styles
+    useEffect( () =>
+    {
+        if ( layoutRef.current )
+        {
+            layoutRef.current.style.setProperty( '--sidebar-width', `${ sidebarWidth }px` );
+            layoutRef.current.style.setProperty( '--preview-width', isZenMode || isFullscreen ? '100%' : `${ previewWidth }%` );
+            layoutRef.current.style.setProperty( '--terminal-height', `${ terminalHeight }px` );
+        }
+    }, [ sidebarWidth, previewWidth, terminalHeight, isZenMode, isFullscreen ] );
+
 
     // Handle Chat interaction
     const handleChatSend = async () =>
@@ -274,25 +289,53 @@ const App: React.FC = () =>
         setTimeout( () => runForgeWorkflow( config ), 0 );
     };
 
-    const runForgeWorkflow = async ( config: ProjectConfig ) =>
+    const runForgeWorkflow = async ( config: ProjectConfig, startStep: number = 1 ) =>
     {
         try
         {
-            setCompleted( false );
-            setFiles( [] );
-            setLogs( [] );
-            addLog( `Initializing Agent Swarm for "${ config.name }"`, 'system', 'cmd' );
-            for ( let i = 1; i <= 6; i++ )
+            if ( startStep === 1 )
+            {
+                setCompleted( false );
+                setFiles( [] );
+                setLogs( [] );
+                addLog( `Initializing Agent Swarm for "${ config.name }"`, 'system', 'cmd' );
+            }
+            else
+            {
+                addLog( `Resuming Agent Swarm from Step ${ startStep }`, 'system', 'cmd' );
+                setActiveError( null );
+            }
+
+            for ( let i = startStep; i <= 6; i++ )
             {
                 setSteps( prev => prev.map( s => s.id === i ? { ...s, status: 'running' } : s ) );
-                const res = await aiService.generateStep( i, { config, currentFiles: files } );
-                if ( res.files )
+                try
                 {
-                    setFiles( prev => [ ...prev, ...res.files ] );
-                    if ( res.files[ 0 ] ) setSelectedFile( res.files[ 0 ] );
+                    const res = await aiService.generateStep( i, { config, currentFiles: files } );
+                    if ( res.files )
+                    {
+                        setFiles( prev =>
+                        {
+                            const newFiles = [ ...prev ];
+                            res.files.forEach( ( f: any ) =>
+                            {
+                                const idx = newFiles.findIndex( nf => nf.name === f.name );
+                                if ( idx !== -1 ) newFiles[ idx ] = f;
+                                else newFiles.push( f );
+                            } );
+                            return newFiles;
+                        } );
+                        if ( res.files[ 0 ] ) setSelectedFile( res.files[ 0 ] );
+                    }
+                    setSteps( prev => prev.map( s => s.id === i ? { ...s, status: 'completed' } : s ) );
+                    addLog( `Step ${ i } complete.`, i.toString(), 'success' );
+                } catch ( stepError )
+                {
+                    setSteps( prev => prev.map( s => s.id === i ? { ...s, status: 'idle' } : s ) );
+                    addLog( `Step ${ i } failed. You can retry from the dashboard.`, i.toString(), 'error' );
+                    setActiveError( `Workflow failed at step ${ i }.` );
+                    return; // Stop execution on error
                 }
-                setSteps( prev => prev.map( s => s.id === i ? { ...s, status: 'completed' } : s ) );
-                addLog( `Step ${ i } complete.`, i.toString(), 'success' );
             }
             setCompleted( true );
         } catch ( error )
@@ -302,7 +345,8 @@ const App: React.FC = () =>
     };
 
     return (
-        <div className={ `flex flex-col h-screen bg-brand-background text-brand-text-primary overflow-hidden relative` }>
+        <div ref={ layoutRef } className={ `flex flex-col h-screen bg-brand-background text-brand-text-primary overflow-hidden relative` }>
+
             { !isZenMode && (
                 <Header
                     viewMode={ viewMode }
@@ -344,7 +388,8 @@ const App: React.FC = () =>
             { viewMode === 'ide' && (
                 <div className="flex-1 flex overflow-hidden">
                     { !isZenMode && (
-                        <aside className="bg-ide-sidebar border-r border-ide-border flex flex-col shrink-0 relative w-[var(--sidebar-width)]" style={ { '--sidebar-width': `${ sidebarWidth }px` } as React.CSSProperties }>
+                        <aside className="bg-ide-sidebar border-r border-ide-border flex flex-col shrink-0 relative">
+
                             <Panel title="Agent Swarm" className="h-64 border-b border-ide-border">
                                 { agents.map( agent => <AgentCard key={ agent.id } agent={ agent } /> ) }
                             </Panel>
@@ -407,9 +452,9 @@ const App: React.FC = () =>
 
                             <div
                                 ref={ previewContainerRef }
-                                className={ `flex flex-col bg-slate-100 shrink-0 relative z-30 shadow-2xl w-[var(--preview-width)] ${ isFullscreen ? 'fixed inset-0 z-[9999]' : '' }` }
-                                style={ { '--preview-width': isZenMode || isFullscreen ? '100%' : `${ previewWidth }%` } as React.CSSProperties }
+                                className={ `flex flex-col bg-slate-100 shrink-0 relative z-30 shadow-2xl preview-container ${ isFullscreen ? 'fixed inset-0 z-[9999]' : '' }` }
                             >
+
                                 <div className="h-10 bg-white border-b border-slate-200 flex items-center px-4 justify-between shrink-0">
                                     <span className="text-xs font-mono text-slate-400">localhost:3000</span>
                                     <div className="flex items-center gap-2">
@@ -452,7 +497,8 @@ const App: React.FC = () =>
                         </div>
 
                         { !isZenMode && (
-                            <div className="bg-ide-bg border-t border-ide-border flex flex-col shrink-0 z-20 relative h-[var(--terminal-height)]" style={ { '--terminal-height': `${ terminalHeight }px` } as React.CSSProperties }>
+                            <div className="bg-ide-bg border-t border-ide-border flex flex-col shrink-0 z-20 relative terminal-container">
+
                                 <div onMouseDown={ () => setActiveResizer( 'terminal' ) } className="absolute -top-1 left-0 right-0 h-2 cursor-row-resize z-50 hover:bg-brand-primary/30"></div>
                                 <div className="h-8 flex items-center px-4 bg-[#1e1e1e] border-b border-ide-border">
                                     <TerminalIcon /> <span className="ml-2 text-xs font-mono text-slate-400">Output</span>
