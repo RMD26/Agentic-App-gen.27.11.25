@@ -18,6 +18,20 @@ export const INITIAL_STEPS: ExecutionStep[] = [
     { id: 6, label: 'Verify & Finalize', status: 'pending', phase: 'ready' },
 ];
 
+// Layout sizing constants (px unless noted).
+export const LAYOUT_CONSTANTS = {
+    sidebarWidth: 320,
+    terminalHeight: 192,
+    previewWidthPercent: 45,
+    geminiLabHeight: 320,
+    geminiAssistantWidth: 320,
+    geminiAssistantMinWidth: 240,
+    geminiAssistantMaxWidth: 520,
+    agentSwarmHeight: 256,
+    geminiLabMinHeight: 180,
+    resizeStep: 16
+};
+
 
 // Enhanced Agent System Prompts for State Machine Architecture
 export const AGENT_SYSTEM_PROMPTS = {

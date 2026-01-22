@@ -2,10 +2,12 @@
   --sidebar-width: 320px;
   --preview-width: 45%;
   --terminal-height: 192px;
+  --gemini-lab-height: 320px;
+  --gemini-assistant-width: 320px;
 }
 
 /* These variables will be updated dynamically via JS on the #root or a specific container */
-aside {
+.ide-sidebar {
   width: var(--sidebar-width);
 }
 
@@ -15,4 +17,12 @@ aside {
 
 .terminal-container {
   height: var(--terminal-height);
+}
+
+.gemini-lab-panel {
+  height: var(--gemini-lab-height);
+}
+
+.gemini-assistant {
+  width: var(--gemini-assistant-width);
 }
