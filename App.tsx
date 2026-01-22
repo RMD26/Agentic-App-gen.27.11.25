@@ -9,7 +9,7 @@ import { AgentCard } from './components/PipelineStage';
 import { CreateWizard } from './components/wizard/CreateWizard';
 import { RefineModal } from './components/RefineModal';
 import { Button } from './components/ui/Button';
-import { INITIAL_AGENTS, INITIAL_STEPS } from './constants';
+import { INITIAL_AGENTS, INITIAL_STEPS, LAYOUT_CONSTANTS } from './constants';
 import { aiService } from './services/aiService';
 import { zipService } from './services/zipService';
 import { Agent, LogEntry, File, ExecutionStep, ProjectConfig, ViewMode, ChatMessage, AspectRatio, ImageSize, ProjectAsset } from './types';
@@ -37,10 +37,12 @@ const App: React.FC = () =>
     const [ assets, setAssets ] = useState<ProjectAsset[]>( [] );
 
     // UI Layout State
-    const [ sidebarWidth, setSidebarWidth ] = useState( 320 );
-    const [ terminalHeight, setTerminalHeight ] = useState( 192 );
-    const [ previewWidth, setPreviewWidth ] = useState( 45 );
-    const [ activeResizer, setActiveResizer ] = useState<'sidebar' | 'preview' | 'terminal' | null>( null );
+    const [ sidebarWidth, setSidebarWidth ] = useState( LAYOUT_CONSTANTS.sidebarWidth );
+    const [ terminalHeight, setTerminalHeight ] = useState( LAYOUT_CONSTANTS.terminalHeight );
+    const [ previewWidth, setPreviewWidth ] = useState( LAYOUT_CONSTANTS.previewWidthPercent );
+    const [ geminiLabHeight, setGeminiLabHeight ] = useState( LAYOUT_CONSTANTS.geminiLabHeight );
+    const [ geminiAssistantWidth, setGeminiAssistantWidth ] = useState( LAYOUT_CONSTANTS.geminiAssistantWidth );
+    const [ activeResizer, setActiveResizer ] = useState<'sidebar' | 'preview' | 'terminal' | 'geminiLab' | 'geminiAssistant' | null>( null );
 
     // Gemini Lab / Chat State
     const [ chatMessages, setChatMessages ] = useState<ChatMessage[]>( [] );
@@ -71,6 +73,7 @@ const App: React.FC = () =>
     const iframeRef = useRef<HTMLIFrameElement>( null );
     const previewContainerRef = useRef<HTMLDivElement>( null );
     const layoutRef = useRef<HTMLDivElement>( null );
+    const sidebarRef = useRef<HTMLElement>( null );
 
     // Check if in demo mode
     const isDemoMode = !process.env.API_KEY || process.env.API_KEY === 'your_api_key_here' || process.env.API_KEY?.trim() === '';
@@ -135,6 +138,32 @@ const App: React.FC = () =>
         };
     }, [ isFullscreen ] );
 
+    const clampValue = ( value: number, min: number, max: number ) => Math.min( Math.max( value, min ), max );
+    const getGeminiLabMaxHeight = ( sidebarRect: DOMRect ) =>
+    {
+        const availableHeight = Math.max( sidebarRect.height - LAYOUT_CONSTANTS.agentSwarmHeight, 0 );
+        return Math.max( availableHeight, LAYOUT_CONSTANTS.geminiLabMinHeight );
+    };
+
+    const handleGeminiLabKeyDown = ( event: React.KeyboardEvent<HTMLDivElement> ) =>
+    {
+        if ( event.key !== 'ArrowUp' && event.key !== 'ArrowDown' ) return;
+        event.preventDefault();
+        const sidebarRect = sidebarRef.current?.getBoundingClientRect();
+        if ( !sidebarRect ) return;
+        const delta = event.key === 'ArrowUp' ? LAYOUT_CONSTANTS.resizeStep : -LAYOUT_CONSTANTS.resizeStep;
+        const maxHeight = getGeminiLabMaxHeight( sidebarRect );
+        setGeminiLabHeight( prev => clampValue( prev + delta, LAYOUT_CONSTANTS.geminiLabMinHeight, maxHeight ) );
+    };
+
+    const handleGeminiAssistantKeyDown = ( event: React.KeyboardEvent<HTMLDivElement> ) =>
+    {
+        if ( event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' ) return;
+        event.preventDefault();
+        const delta = event.key === 'ArrowLeft' ? LAYOUT_CONSTANTS.resizeStep : -LAYOUT_CONSTANTS.resizeStep;
+        setGeminiAssistantWidth( prev => clampValue( prev + delta, LAYOUT_CONSTANTS.geminiAssistantMinWidth, LAYOUT_CONSTANTS.geminiAssistantMaxWidth ) );
+    };
+
     // Global Resize Handler
     useEffect( () =>
     {
@@ -153,6 +182,19 @@ const App: React.FC = () =>
             {
                 const newHeight = window.innerHeight - e.clientY;
                 setTerminalHeight( Math.min( Math.max( newHeight, 100 ), window.innerHeight * 0.7 ) );
+            } else if ( activeResizer === 'geminiLab' )
+            {
+                const sidebarRect = sidebarRef.current?.getBoundingClientRect();
+                if ( sidebarRect )
+                {
+                    const newHeight = sidebarRect.bottom - e.clientY;
+                    const maxHeight = getGeminiLabMaxHeight( sidebarRect );
+                    setGeminiLabHeight( clampValue( newHeight, LAYOUT_CONSTANTS.geminiLabMinHeight, maxHeight ) );
+                }
+            } else if ( activeResizer === 'geminiAssistant' )
+            {
+                const newWidth = window.innerWidth - e.clientX;
+                setGeminiAssistantWidth( clampValue( newWidth, LAYOUT_CONSTANTS.geminiAssistantMinWidth, LAYOUT_CONSTANTS.geminiAssistantMaxWidth ) );
             }
         };
         const handleMouseUp = () => setActiveResizer( null );
@@ -173,8 +215,10 @@ const App: React.FC = () =>
             layoutRef.current.style.setProperty( '--sidebar-width', `${ sidebarWidth }px` );
             layoutRef.current.style.setProperty( '--preview-width', isZenMode || isFullscreen ? '100%' : `${ previewWidth }%` );
             layoutRef.current.style.setProperty( '--terminal-height', `${ terminalHeight }px` );
+            layoutRef.current.style.setProperty( '--gemini-lab-height', `${ geminiLabHeight }px` );
+            layoutRef.current.style.setProperty( '--gemini-assistant-width', `${ geminiAssistantWidth }px` );
         }
-    }, [ sidebarWidth, previewWidth, terminalHeight, isZenMode, isFullscreen ] );
+    }, [ sidebarWidth, previewWidth, terminalHeight, geminiLabHeight, geminiAssistantWidth, isZenMode, isFullscreen ] );
 
 
     // Handle Chat interaction
@@ -388,13 +432,22 @@ const App: React.FC = () =>
             { viewMode === 'ide' && (
                 <div className="flex-1 flex overflow-hidden">
                     { !isZenMode && (
-                        <aside className="bg-ide-sidebar border-r border-ide-border flex flex-col shrink-0 relative">
+                        <aside ref={ sidebarRef } className="ide-sidebar bg-ide-sidebar border-r border-ide-border flex flex-col shrink-0 relative">
 
                             <Panel title="Agent Swarm" className="h-64 border-b border-ide-border">
                                 { agents.map( agent => <AgentCard key={ agent.id } agent={ agent } /> ) }
                             </Panel>
 
-                            <Panel title="Gemini Lab" className="flex-1">
+                            <Panel title="Gemini Lab" className="gemini-lab-panel relative">
+                                <div
+                                    onMouseDown={ () => setActiveResizer( 'geminiLab' ) }
+                                    onKeyDown={ handleGeminiLabKeyDown }
+                                    className="absolute -top-1 left-0 right-0 h-2 cursor-row-resize z-50 hover:bg-brand-primary/30 focus:outline-none focus-visible:bg-brand-primary/40"
+                                    role="separator"
+                                    aria-label="Resize Gemini Lab panel"
+                                    aria-orientation="horizontal"
+                                    tabIndex={ 0 }
+                                ></div>
                                 <div className="p-4 space-y-4">
                                     <div className="bg-slate-800/50 p-3 rounded-lg border border-slate-700">
                                         <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Image Asset Generation</label>
@@ -519,7 +572,16 @@ const App: React.FC = () =>
 
                     {/* AI Powered Chatbot Sidebar */ }
                     { !isZenMode && (
-                        <aside className="w-80 bg-brand-surface border-l border-slate-700 flex flex-col">
+                        <aside className="gemini-assistant bg-brand-surface border-l border-slate-700 flex flex-col relative">
+                            <div
+                                onMouseDown={ () => setActiveResizer( 'geminiAssistant' ) }
+                                onKeyDown={ handleGeminiAssistantKeyDown }
+                                className="absolute top-0 -left-1 bottom-0 w-2 cursor-col-resize z-50 hover:bg-brand-primary/30 focus:outline-none focus-visible:bg-brand-primary/40"
+                                role="separator"
+                                aria-label="Resize Gemini Assistant panel"
+                                aria-orientation="vertical"
+                                tabIndex={ 0 }
+                            ></div>
                             <div className="p-4 border-b border-slate-700 flex items-center justify-between">
                                 <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Gemini Assistant</h3>
                                 <button
